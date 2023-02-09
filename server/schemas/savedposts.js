@@ -2,7 +2,7 @@ const { type } = require("@testing-library/user-event/dist/type");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const posts_schema = new Schema(
+const savedsposts_schema = new Schema(
   {
     // first_name: { type: String, required: [true, "must be entered"] },
     // second_name: { type: String },
@@ -23,5 +23,5 @@ const posts_schema = new Schema(
   { timestamps: true }
 );
 
-const posts = new mongoose.model("posts", posts_schema);
-module.exports = posts;
+const savedsposts = new mongoose.model("savedsposts", savedsposts_schema);
+module.exports = savedsposts;

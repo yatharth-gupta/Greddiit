@@ -11,6 +11,8 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { CircularProgress } from "@mui/material";
+
 // const express = require("express");
 // const app = express();
 // app.use(bodyparser.urlencoded({ extended: true }));
@@ -272,7 +274,16 @@ export default function Mysubgreddiit(props) {
               )}
             </Popup>
             {/* </div> */}
-            {done ? mapfunction() : <p>loading</p>}
+            {done ? mapfunction() : <CircularProgress
+      size={70}
+      sx={{
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 2,
+      }}
+    />}
           </div>
         </div>
       </div>

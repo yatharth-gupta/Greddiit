@@ -18,6 +18,7 @@ import {
   // navigate,
   useNavigate,
 } from "react-router-dom";
+import Savedposts from "./pages/saved_Posts/saved_posts";
 function App() {
   //login-signup toggle
   const [currform, setcurrform] = useState("Login");
@@ -186,6 +187,26 @@ function App() {
               userdata = {userdata}
             >
               <Subgreddiit userdata = {userdata}/>
+             </ProtectedLogin1>
+          }
+        /> 
+        <Route
+          path="/saved_posts"
+          element={
+            // <ProtectedLogin1 user={user}>
+            <ProtectedLogin1
+              user={user}
+              // setfirst_name={setfirst_name}
+              // setsecond_name={setsecond_name}
+              // setusername={setusername}
+              // setage={setage}
+              // setemail={setemail}
+              // setcontact={setcontact}
+              setuserdata = {setuserdata}
+              setUser = {setUser}
+              userdata = {userdata}
+            >
+              <Savedposts></Savedposts>
              </ProtectedLogin1>
           }
         /> 

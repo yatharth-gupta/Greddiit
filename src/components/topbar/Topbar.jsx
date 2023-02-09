@@ -38,6 +38,18 @@ export default function Topbar() {
             className="homeii"
             onClick={() => {
               // console.log("yo!");
+              navigate("/saved_posts");
+              // <home/>
+            }}
+          >
+            {/* <RedditIcon size="small" className="topbarLink" /> */}
+            Saved Posts
+            {/* <span className="topbarLink" >Homepage</span> */}
+          </button>
+          <button
+            className="homeii"
+            onClick={() => {
+              // console.log("yo!");
               navigate("/subgreddiit");
               // <home/>
             }}

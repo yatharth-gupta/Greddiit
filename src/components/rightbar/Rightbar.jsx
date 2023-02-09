@@ -9,6 +9,8 @@ import { useEffect } from "react";
 import { set } from "mongoose";
 import CancelIcon from "@mui/icons-material/Cancel";
 import  React  from "react";
+import { CircularProgress } from "@mui/material";
+
 
 const Rightbar = React.memo(function Rightbar (props) {
   const HomeRightbar = () => {
@@ -390,7 +392,17 @@ const Rightbar = React.memo(function Rightbar (props) {
         </div>
       </>
     ) : (
-      <p>loading</p>
+      // <p>loading</p>
+      <CircularProgress
+      size={70}
+      sx={{
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 2,
+      }}
+    />
       );
     };
     return (

@@ -7,6 +7,12 @@ import Feed from "../../components/feed/Feed";
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import Popup from "reactjs-popup";
+import Post from "../../components/post/Post";
+import { CircularProgress } from "@mui/material";
+
+// import LoadingButton from '@mui/lab/LoadingButton';
+// or
+import { LoadingButton } from "@mui/lab";
 const Subdetails = () => {
   const { name } = useParams();
   const [subgdata, setsubgdata] = useState({});
@@ -21,6 +27,18 @@ const Subdetails = () => {
   const [topic, settopic] = useState(null);
   const [posts, setposts] = useState([]);
   const [modemail, setmodemail] = useState([]);
+  // const [up, setup] = useState(0);
+  const [down, setdown] = useState(0);
+  const [votes, setvotes] = useState(0);
+
+  // const [up,setup] = useState(post.like)
+  // const [isup,setIsup] = useState(false)
+
+  // const upHandler =()=>{
+  //   setup(isup ? up-1 : up+1)
+  //   setIsupd(!isup)
+  // }
+
   let navigate = useNavigate();
   function button_(index) {
     setview(index);
@@ -48,21 +66,6 @@ const Subdetails = () => {
         .post("http://localhost:5000/findsub", { Name: name })
         .then((response) => {
           console.log(response);
-          // setResponse(response.data)
-          // console.log(response);
-          // props.onFormSwitch("Login");
-          // naviagte("/");
-          // for (let i = 0; i < response?.data?.length; i++) {
-          //   // if (arr[0] === 0) {
-          //   // if (users.length >= response.data?.length) {
-          //   //   continue;
-          //   // }
-          //   // console.log(response?.data[i]?.email);
-          //   // if (response?.data[i]?.email === email) {
-          //   //   console.log("qwerty");
-          //   //   k = 1;
-          //   //   continue;
-          //   // }
           var temp = {
             no_of_followers: response?.data?.no_of_followers,
             no_of_posts: response?.data?.no_of_posts,
@@ -108,25 +111,16 @@ const Subdetails = () => {
           var temp1 = [];
           console.log(response?.data?.length);
           for (let i = 0; i < response?.data?.length; i++) {
-            //   // if (arr[0] === 0) {
-            //   // if (users.length >= response.data?.length) {
-            //   //   continue;
-            //   // }
-            //   // console.log(response?.data[i]?.email);
-            //   // if (response?.data[i]?.email === email) {
-            //   //   console.log("qwerty");
-            //   //   k = 1;
-            //   //   continue;
-            //   // }
             console.log(i);
             temp1.push({
               id: i,
+              id1: response?.data[i]?._id,
               upvotes: response?.data[i]?.upvotes,
               downvotes: response?.data[i]?.downvotes,
               username: response?.data[i]?.username,
               email: response?.data[i]?.email,
               topic: response?.data[i]?.topic,
-              comments: response?.data[i]?.followers,
+              comments: response?.data[i]?.comments,
               Name: response?.data[i]?.Name,
               content: response?.data[i]?.content,
               tags: response?.data[i]?.tags,
@@ -178,7 +172,7 @@ const Subdetails = () => {
         // setResponse(response.data)
         console.log(response);
         setchange1(change1 + 1);
-        // navigate("/mysubgreddiit")
+        // navigate(`/subgreddiit/${name}`)
         // props.onFormSwitch("Login");
         // naviagte("/");
       })
@@ -266,7 +260,32 @@ const Subdetails = () => {
     // navigate(`/subgreddiit/${name}`);
   };
 
-  return done && done1 ? (
+  function upvote() {
+    const up = subgdata.upvotes;
+    axios
+      .post("http://localhost:5000/upvote", { name, up })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    setvotes(votes + 1);
+  }
+  function downvote() {
+    const down = subgdata.downvotes;
+    axios
+      .post("http://localhost:5000/downvote", { name, down })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    setvotes(votes - 1);
+  }
+
+  return (done && done1) ? (
     <>
       {/* {console.log(subgdata.moderator)} */}
       <Topbar />
@@ -333,6 +352,47 @@ const Subdetails = () => {
                 </button>
               </div>
             </ul>
+          </div>
+        </div>
+        <div className="details1">
+          <div className="img2">
+            <img
+              className="img1"
+              src="https://source.unsplash.com/random/200x200?sig=1"
+              alt="image"
+            />
+            <h2>{name}</h2>
+          </div>
+          <div className="subdetails">
+            <p>
+              <span style={{ float: "left" }}>
+                {/* {console.log(subgdata.moderator[0].username)} */}
+                <b>Created by - {subgdata.moderator[0].username}</b>
+              </span>
+              <span style={{ float: "right" }}>
+                {console.log()}
+                {follows === 0 ? (
+                  <button onClick={() => addinrequest()}>Follow</button>
+                ) : follows === 1 &&
+                  subgdata.moderator[0].email ===
+                    localStorage.getItem("hello") ? (
+                  <p>following</p>
+                ) : follows === 2 ? (
+                  <p>requested</p>
+                ) : follows === 1 &&
+                  subgdata.moderator[0].email !==
+                    localStorage.getItem("hello") ? (
+                  <>
+                    <span>following</span>
+                    <button onClick={() => leave()}>Leave</button>
+                  </>
+                ) : (
+                  <></>
+                )}
+              </span>
+            </p>
+            <p>Description</p>
+            <div className="des">{subgdata.description}</div>
           </div>
         </div>
         <div className="extraview">
@@ -414,72 +474,55 @@ const Subdetails = () => {
             </div>
           ) : (
             <>
-              {follows === 0 ? (
-                <button onClick={() => addinrequest()}>Follow</button>
-              ) : follows === 1 &&
-                subgdata.moderator.email === localStorage.getItem("hello") ? (
-                <>
-                  <p>following</p>
-                  <button>Add Posts</button>
-                </>
-              ) : follows === 2 ? (
-                <p>requested</p>
-              ) : follows === 1 &&
-                subgdata.moderator.email !== localStorage.getItem("hello") ? (
-                <>
-                  <p>following</p>
-                  <button onClick={() => leave()}>Leave</button>
-                  <div className="profileInfo">
-                    <Popup
-                      trigger={
-                        <button className="profileInfoName">
-                          Create Posts
-                        </button>
-                      }
-                      modal
-                      nested
-                    >
-                      {(close) => (
-                        <>
-                          <p style={{ textAlign: "center", fontSize: "30px" }}>
-                            {" "}
-                            <u> Create new Subgreddiit</u>
-                          </p>
-                          <form className="modal">
-                            <input
-                              type="text"
-                              required={true}
-                              placeholder="Topic"
-                              className="subform"
-                              value={topic}
-                              onChange={(e) => {
-                                settopic(e.target.value);
-                              }}
-                            />
-                            <textarea
-                              name="Description"
-                              id="Description"
-                              cols="30"
-                              rows="5"
-                              placeholder="Content"
-                            ></textarea>
-                          </form>
-                          <div className="profileInfoName">
-                            <button
-                              className="formsubmit"
-                              onClick={() => {
-                                submitform();
-                                close();
-                              }}
-                            >
-                              Submit
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </Popup>
-                  </div>
-                </>
+              {subgdata.moderator.email !== localStorage.getItem("hello") ? (
+                <div className="profileInfo">
+                  <Popup
+                    trigger={
+                      <button className="profileInfoName">Create Posts</button>
+                    }
+                    modal
+                    nested
+                  >
+                    {(close) => (
+                      <>
+                        <p style={{ textAlign: "center", fontSize: "30px" }}>
+                          {" "}
+                          <u> Create new Post</u>
+                        </p>
+                        <form className="modal">
+                          <input
+                            type="text"
+                            required={true}
+                            placeholder="Topic"
+                            className="subform"
+                            value={topic}
+                            onChange={(e) => {
+                              settopic(e.target.value);
+                            }}
+                          />
+                          <textarea
+                            name="Description"
+                            id="Description"
+                            cols="30"
+                            rows="5"
+                            placeholder="Content"
+                          ></textarea>
+                        </form>
+                        <div className="profileInfoName">
+                          <button
+                            className="formsubmit"
+                            onClick={() => {
+                              close();
+                              submitform();
+                            }}
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </Popup>
+                </div>
               ) : (
                 <></>
               )}
@@ -491,13 +534,16 @@ const Subdetails = () => {
                 </p>
                 <div className="flex1">
                   {posts.map((p) => {
-                    return (
-                      <div className="allposts" key={p.id}>
-                        <p>Posted by -:{p.username}</p>
-                        <p>Topic -:{p.topic}</p>
-                        <p>Content -:{p.content}</p>
-                      </div>
-                    );
+                    // return (
+                    //   <div className="allposts" key={p.id}>
+                    //     <p>Posted by -:{p.username}</p>
+                    //     <p>Topic -:{p.topic}</p>
+                    //     <p>Content -:{p.content}</p>
+                    //     <button onClick={()=>upvote()}>upvote {upvotes}</button>
+                    //     <button onClick={()=>downvote()}>downvote {downvotes}</button>
+                    //   </div>
+                    // );
+                    return <Post key={p.id} post={p} username={username} />;
                   })}
                 </div>
               </div>
@@ -507,7 +553,17 @@ const Subdetails = () => {
       </div>
     </>
   ) : (
-    <p>loading</p>
+    // <p>loading</p>
+    <CircularProgress
+      size={70}
+      sx={{
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 2,
+      }}
+    />
   );
 };
 

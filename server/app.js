@@ -17,6 +17,7 @@ const person = require("./schemas/people");
 const subgreddiit = require("./schemas/subgreddiit");
 const follow = require("./schemas/followers_following");
 const posts = require("./schemas/posts");
+const Savedposts = require("./schemas/savedposts");
 const { useNavigate } = require("react-router-dom");
 const { response } = require("express");
 app.use(cors());
@@ -190,6 +191,11 @@ router.post("/all_users", async (req, res) => {
   return res.json(per);
 });
 
+router.post("/all_savedposts", async (req, res) => {
+  const per = await Savedposts.find({});
+  return res.json(per);
+});
+
 router.post("/findsub", async (req, res) => {
   console.log(req.body);
   const Name = req.body.Name;
@@ -198,11 +204,79 @@ router.post("/findsub", async (req, res) => {
   return res.send(per);
 });
 
+router.post("/showcomments", async (req, res) => {
+  console.log(req.body);
+  const Name = req.body.Name;
+  const per = await posts.findOne({ _id: Name });
+  console.log(per.comments);
+  return res.send(per.comments);
+});
+
+router.post("/addcomment", async (req, res) => {
+  console.log(req.body);
+  const { text, name, username } = req.body;
+  const per = await posts.findOneAndUpdate(
+    { _id: name },
+    { $push: { comments: { text, username } } }
+  );
+  console.log(per);
+  return res.send(per);
+});
+
+router.post("/savepost", async (req, res) => {
+  // console.log(req.body);
+  const post = req.body;
+  const Posts = new Savedposts({
+    topic: post.topic,
+    username: post.username,
+    email: post.email,
+    upvotes: post.upvotes,
+    downvotes: post.downvotes,
+    Name: post.Name,
+    content: post.content,
+    comments:post.comments,
+    banned_keywords: post.banned_keywords,
+    tags: post.tags,
+  });
+  try {
+    const per = Posts.save()
+    console.log(per);
+    res.send(per)
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.post("/upvote", async (req, res) => {
+  const { name, up } = req.body;
+  posts
+    .findOneAndUpdate({ _id: name }, { $set: { upvotes: up + 1 } })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+router.post("/downvote", async (req, res) => {
+  const { name, down } = req.body;
+  posts
+    .findOneAndUpdate({ _id: name }, { $set: { downvotes: down + 1 } })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  res.send();
+});
+
 router.post("/findposts", async (req, res) => {
   console.log(req.body);
   const Name = req.body.Name;
   const per = await posts.find({ Name: Name });
-  return res.send(per)
+  return res.send(per);
 });
 
 router.post("/findinsubg", async (req, res) => {
@@ -311,6 +385,20 @@ router.post("/deletesub", async (req, res) => {
   const Name = req.body.Name;
   try {
     const user1 = await subgreddiit.deleteOne({ Name: Name });
+    if (user1) {
+      return res.send(user1);
+    }
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.post("/deletepost", async (req, res) => {
+  // console.log(req.body);
+  // const { email, email1 } = req.body;
+  const id1 = req.body.id1;
+  try {
+    const user1 = await Savedposts.deleteOne({ _id:id1 });
     if (user1) {
       return res.send(user1);
     }

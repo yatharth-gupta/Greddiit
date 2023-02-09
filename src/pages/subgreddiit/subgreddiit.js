@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Topbar from "../../components/topbar/Topbar";
+import { CircularProgress } from "@mui/material";
+
 // import "./subdetails.css";
 import { Link } from "react-router-dom";
 import Feed from "../../components/feed/Feed";
@@ -195,7 +197,17 @@ const Subgreddiit = (props) => {
       {mapfunction()}
     </>
   ) : (
-    <p>loading</p>
+    // <p>loading</p>
+    <CircularProgress
+      size={70}
+      sx={{
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 2,
+      }}
+    />
   );
 };
 
