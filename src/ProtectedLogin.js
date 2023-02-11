@@ -15,7 +15,7 @@ const ProtectedLogin1 = ({ children, user, setUser,setuserdata, userdata }) => {
   let navigate = useNavigate();
   console.log("user is there");
   // useEffect(() => {
-  useEffect( () => {
+  // useEffect( () => {
   // console.log(user);
   // }, [userdata]);
   if (!user) navigate("/");
@@ -52,8 +52,8 @@ const ProtectedLogin1 = ({ children, user, setUser,setuserdata, userdata }) => {
     // }
     console.log("going to Profile_page");
   }
-  },[]);
   return children;
+  // },[]);
 };
 
 export default ProtectedLogin1;

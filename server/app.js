@@ -18,6 +18,7 @@ const subgreddiit = require("./schemas/subgreddiit");
 const follow = require("./schemas/followers_following");
 const posts = require("./schemas/posts");
 const Savedposts = require("./schemas/savedposts");
+const reportedposts = require("./schemas/reportedposts");
 const { useNavigate } = require("react-router-dom");
 const { response } = require("express");
 app.use(cors());
@@ -89,7 +90,7 @@ router.post("/signup", async (request, response) => {
 });
 
 router.post("/posts", async (request, response) => {
-  const { name, des, email, username, topic, banned, tags, no_of_posts } =
+  const { name, des1, email, username, topic, banned, tags, no_of_posts } =
     request.body;
   console.log(request.body);
   try {
@@ -101,7 +102,7 @@ router.post("/posts", async (request, response) => {
       upvotes: 0,
       downvotes: 0,
       Name: name,
-      content: des,
+      content: des1,
       banned_keywords: banned,
       tags: tags,
     });
@@ -204,6 +205,30 @@ router.post("/findsub", async (req, res) => {
   return res.send(per);
 });
 
+router.post("/search", async (req, res) => {
+  console.log(req.body);
+  const Name = req.body.Name;
+  const regex = new RegExp(`.*${Name}.*`, "i");
+  const per = await subgreddiit.find({ Name: regex });
+  console.log(per);
+  return res.send(per);
+});
+
+router.post("/tag", async (req, res) => {
+  console.log(req.body);
+  const alltags = req.body.all;
+  var final = [{}]
+  // alltags.map(async(tag)=>{
+    // const regex = new RegExp(`^${tag}$`, "i");
+    const per = await subgreddiit.find({tags: {$all: alltags}});
+  //   console.log(per)
+  //     final.push(per);
+  //   })
+  console.log(per);
+  console.log(1);
+  return res.send(per);
+});
+
 router.post("/showcomments", async (req, res) => {
   console.log(req.body);
   const Name = req.body.Name;
@@ -234,14 +259,47 @@ router.post("/savepost", async (req, res) => {
     downvotes: post.downvotes,
     Name: post.Name,
     content: post.content,
-    comments:post.comments,
+    comments: post.comments,
     banned_keywords: post.banned_keywords,
     tags: post.tags,
   });
   try {
-    const per = Posts.save()
+    const per = Posts.save();
     console.log(per);
-    res.send(per)
+    res.send(per);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.post("/reportpost", async (req, res) => {
+  // console.log(req.body);
+  const post = req.body.post;
+  const concern = req.body.concern;
+  const reportedtext = req.body.reportedtext;
+  const reportedby = req.body.username;
+  const postid = req.body.postid;
+  const Posts = new reportedposts({
+    topic: post.topic,
+    username: post.username,
+    email: post.email,
+    upvotes: post.upvotes,
+    downvotes: post.downvotes,
+    Name: post.Name,
+    content: post.content,
+    comments: post.comments,
+    banned_keywords: post.banned_keywords,
+    tags: post.tags,
+    concern: concern,
+    reportedtext: reportedtext,
+    reportedby: reportedby,
+    postid: postid,
+  });
+  console.log(Posts);
+  try {
+    const per = Posts.save();
+    console.log(per);
+    res.send(per);
   } catch (error) {
     console.log(error);
   }
@@ -273,9 +331,26 @@ router.post("/downvote", async (req, res) => {
 });
 
 router.post("/findposts", async (req, res) => {
+  console.log("findposts");
   console.log(req.body);
   const Name = req.body.Name;
+  const message = req.body.message;
   const per = await posts.find({ Name: Name });
+  const per1 = await subgreddiit.find({ Name: Name });
+  console.log(per);
+  console.log(per1);
+  if (message === 1) {
+    var block = [];
+    block = per1[0].blocked;
+    console.log(block);
+    per.map((p) => {
+      console.log("hello1");
+      if (per1[0].blocked?.includes(p.username)) {
+        console.log("hello");
+        p.username = "Blocked User";
+      }
+    });
+  }
   return res.send(per);
 });
 
@@ -385,7 +460,10 @@ router.post("/deletesub", async (req, res) => {
   const Name = req.body.Name;
   try {
     const user1 = await subgreddiit.deleteOne({ Name: Name });
-    if (user1) {
+    const user2 = await posts.deleteMany({ Name: Name });
+    const user3 = await Savedposts.deleteMany({ Name: Name });
+    const user4 = await reportedposts.deleteMany({ Name: Name });
+    if (user1 && user2) {
       return res.send(user1);
     }
   } catch (error) {
@@ -398,7 +476,46 @@ router.post("/deletepost", async (req, res) => {
   // const { email, email1 } = req.body;
   const id1 = req.body.id1;
   try {
-    const user1 = await Savedposts.deleteOne({ _id:id1 });
+    const user1 = await Savedposts.deleteOne({ _id: id1 });
+    if (user1) {
+      return res.send(user1);
+    }
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.post("/deletepostpermanent", async (req, res) => {
+  // console.log(req.body);
+  // const { email, email1 } = req.body;
+  const { id1, id2 } = req.body;
+  try {
+    const user1 = await posts.deleteOne({ _id: id1 });
+    const user2 = await reportedposts.deleteOne({ _id: id2 });
+    if (user1 && user2) {
+      console.log(user1);
+      return res.send(user1);
+    }
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.post("/blockuser", async (req, res) => {
+  // console.log(req.body);
+  // const { email, email1 } = req.body;
+  const { username, name, id2 } = req.body;
+  try {
+    const user1 = await subgreddiit.findOneAndUpdate(
+      { Name: name },
+      { $pull: { followers: username } }
+    );
+    const user2 = await subgreddiit.findOneAndUpdate(
+      { Name: name },
+      { $push: { blocked: username } }
+    );
+    const user3 = await reportedposts.deleteOne({ _id: id2 });
+
     if (user1) {
       return res.send(user1);
     }
@@ -426,8 +543,8 @@ router.post("/getfollowers", (req, res) => {
     .find({ email: email })
     .then((response) => {
       console.log(response);
-      console.log(response[0].followers);
-      res.send(response[0].followers);
+      console.log(response[0]?.followers);
+      res.send(response[0]?.followers);
     })
     .catch((err) => {
       console.log(err);
@@ -440,8 +557,8 @@ router.post("/getfollowing", (req, res) => {
     .find({ email: email })
     .then((response) => {
       console.log(response);
-      console.log(response[0].following);
-      res.send(response[0].following);
+      console.log(response[0]?.following);
+      res.send(response[0]?.following);
     })
     .catch((err) => {
       console.log(err);
@@ -477,9 +594,11 @@ router.post("/getusername1", (req, res) => {
 router.post("/mysubgreddiit", (req, res) => {
   const email = req.body.email;
   const username = req.body.username;
-  const description = req.body.des;
+  const description = req.body.des1;
   const Name = req.body.name;
   const moderator = { username, email };
+  const bannedstring = req.body.bannedstring;
+  const tagwords = req.body.tagwords;
 
   const Subgreddiit = new subgreddiit({
     moderator: [moderator],
@@ -488,6 +607,8 @@ router.post("/mysubgreddiit", (req, res) => {
     no_of_posts: 0,
     Name: Name,
     description: description,
+    banned_keywords: bannedstring,
+    tags: tagwords,
   });
   Subgreddiit.save()
     .then((response) => {
@@ -509,6 +630,12 @@ router.post("/mysubgreddiitdata", async (req, res) => {
 router.post("/allsubgreddiitdata", async (req, res) => {
   // const email = req.body.email
   const all = await subgreddiit.find({});
+  return res.json(all);
+});
+
+router.post("/all_reportedposts", async (req, res) => {
+  // const email = req.body.email
+  const all = await reportedposts.find({});
   return res.json(all);
 });
 

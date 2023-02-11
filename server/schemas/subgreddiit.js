@@ -22,7 +22,7 @@ const subgreddiit_schema = new Schema(
     no_of_posts: { type: Number },
     Name: { type: String, required: [true, "must be entered"], unique: true },
     description: { type: String },
-    banned_keywords: { type: Array },
+    banned_keywords: { type: String },
     tags: { type: Array },
   },
   { timestamps: true }

@@ -30,7 +30,13 @@ const Subdetails = () => {
   // const [up, setup] = useState(0);
   const [down, setdown] = useState(0);
   const [votes, setvotes] = useState(0);
+  const [repoposts, setrepoposts] = useState([]);
+  const [isignored, setisignored] = useState(false);
 
+  const [bannedstring, setbannedstring] = useState("");
+  const [tagsstring, settagsstring] = useState("");
+  let des1 = "";
+  let tagwords = [];
   // const [up,setup] = useState(post.like)
   // const [isup,setIsup] = useState(false)
 
@@ -62,11 +68,13 @@ const Subdetails = () => {
   useEffect(() => {
     if (username && change1) {
       console.log("3");
+      var temp = {};
+      var message = 0;
       axios
         .post("http://localhost:5000/findsub", { Name: name })
         .then((response) => {
           console.log(response);
-          var temp = {
+          temp = {
             no_of_followers: response?.data?.no_of_followers,
             no_of_posts: response?.data?.no_of_posts,
             moderator: response?.data?.moderator,
@@ -97,10 +105,15 @@ const Subdetails = () => {
         .catch(function (error) {
           console.log(error);
         });
-
+        // if (temp?.moderator[0]?.email !== localStorage.getItem("hello"))
+            message = 1;
+      // if (temp?.moderator[0]?.email !== localStorage.getItem("hello"))
       console.log("findposts");
       axios
-        .post("http://localhost:5000/findposts", { Name: name })
+        .post("http://localhost:5000/findposts", {
+          Name: name,
+          message: message,
+        })
         .then((response) => {
           console.log(response);
           // setResponse(response.data)
@@ -115,6 +128,7 @@ const Subdetails = () => {
             temp1.push({
               id: i,
               id1: response?.data[i]?._id,
+              postid: response?.data[i]?.postid,
               upvotes: response?.data[i]?.upvotes,
               downvotes: response?.data[i]?.downvotes,
               username: response?.data[i]?.username,
@@ -141,6 +155,53 @@ const Subdetails = () => {
         .catch(function (error) {
           console.log(error);
         });
+
+      axios
+        .post("http://localhost:5000/all_reportedposts")
+        .then((response) => {
+          console.log(response);
+          // setResponse(response.data)
+          // console.log(response);
+          // props.onFormSwitch("Login");
+          // naviagte("/");
+          // if (response.data.message) {
+          var temp1 = [];
+          console.log(response?.data?.length);
+          for (let i = 0; i < response?.data?.length; i++) {
+            console.log(i);
+            temp1.push({
+              id: i,
+              id1: response?.data[i]?._id,
+              postid: response?.data[i]?.postid,
+              upvotes: response?.data[i]?.upvotes,
+              downvotes: response?.data[i]?.downvotes,
+              username: response?.data[i]?.username,
+              email: response?.data[i]?.email,
+              topic: response?.data[i]?.topic,
+              comments: response?.data[i]?.comments,
+              Name: response?.data[i]?.Name,
+              content: response?.data[i]?.content,
+              tags: response?.data[i]?.tags,
+              banned_keywords: response?.data[i]?.banned_keywords,
+              concern: response?.data[i]?.concern,
+              reportedtext: response?.data[i]?.reportedtext,
+              reportedby: response?.data[i]?.reportedby,
+            });
+            // }
+            // }
+            setrepoposts(temp1);
+            console.log("bsdk12 : ", temp1);
+          }
+          // else
+          // {
+          //   var temp1 = []
+          //   temp1.push
+          // }
+          // setdone(true);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     }
   }, [username, change1]);
 
@@ -151,8 +212,8 @@ const Subdetails = () => {
     // e.preventDefault();
     // console.log(Description)
     console.log("posts");
-    console.log(document.getElementById("Description").value);
-    const des = document.getElementById("Description").value;
+    // console.log(document.getElementById("Description").value);
+    // const des = document.getElementById("Description").value;
     const email = localStorage.getItem("hello");
     const banned = subgdata.banned_keywords;
     const tags = subgdata.tags;
@@ -160,7 +221,7 @@ const Subdetails = () => {
     axios
       .post("http://localhost:5000/posts", {
         name,
-        des,
+        des1,
         email,
         username,
         topic,
@@ -181,6 +242,85 @@ const Subdetails = () => {
       });
     // setadd(!add)
   };
+
+  const findbannedwords = async () => {
+    // e.preventDefault();
+    // console.log(Description)
+    // tagwords = tagsstring.split(",");
+    const bannedwords = subgdata.banned_keywords.split(",");
+    // const bannedwords = bannedstring.split(",")
+    // setdes(document.getElementById("Description").value);
+    des1 = document.getElementById("Description").value;
+    var des = document.getElementById("Description").value;
+
+    // console.log(des1);
+    console.log(bannedwords);
+    // setdeswords(des.split(" "))
+    // console.log(deswords)
+    // deswords.map((d)=>{
+
+    // })
+    await bannedwords.map((b) => {
+      var searchMask = `${b}`;
+      var regEx = new RegExp(searchMask, "ig");
+      var replaceMask = "*";
+      // setdes(des.replace(regEx, replaceMask));
+      des1 = des1.replace(regEx, replaceMask);
+      console.log(des1);
+      // setdes(des1)
+    });
+    if (des1 !== des) {
+      alert("your post contains banned keywords");
+    }
+    submitform();
+    // console.log(name);
+    // console.log(document.getElementById("Description").value);
+  };
+
+  function deletepost(index) {
+    const id1 = repoposts[index]?.postid;
+    const id2 = repoposts[index]?.id1;
+    console.log(id1)
+    axios
+      .post("http://localhost:5000/deletepostpermanent", { id1,id2 })
+      .then((response) => {
+        console.log(response);
+        delete repoposts[index];
+        navigate(`/subgreddiit/${name}`);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    }
+
+    function blockuser(index) {
+      const username = repoposts[index].username;
+      const id2 = repoposts[index]?.id1;
+      axios
+      .post("http://localhost:5000/blockuser", { name, username,id2 })
+      .then((response) => {
+        console.log(response);
+        delete repoposts[index];
+        navigate(`/subgreddiit/${name}`);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  // function ignore(index) {
+  //   const username = repoposts[index].username;
+  //   axios
+  //     .post("http://localhost:5000/ignore", { name,username })
+  //     .then((response) => {
+  //       console.log(response);
+  //       // delete repoposts[index];
+  //       navigate(`/subgreddiit/${name}`);
+  //     })
+  //     .catch(function (error) {
+  //       console.log(error);
+  //     });
+  // }
 
   function addinrequest() {
     // setisclicked(true)
@@ -285,7 +425,7 @@ const Subdetails = () => {
     setvotes(votes - 1);
   }
 
-  return (done && done1) ? (
+  return done && done1 ? (
     <>
       {/* {console.log(subgdata.moderator)} */}
       <Topbar />
@@ -468,11 +608,72 @@ const Subdetails = () => {
                   <u>Reported Posts</u>
                 </b>
               </p>
-              {/* {subgdata.followers.map((f) => {
-              return <span>{f}</span>;
-            })} */}
+              {/* <div style={{width:"100%",alignItems:"center"}}> */}
+              {repoposts.map((p) => {
+                return (
+                  <div className="allposts" key={p.id}>
+                    {console.log(p?.reportedby)}
+                    <p>Reported by -:{p?.reportedby}</p>
+                    <p>Posted by -:{p?.username}</p>
+                    <p>Concern -:{p.concern}</p>
+                    <p>Reportedtext -:{p.reportedtext}</p>
+                    {/* <button onClick={()=>upvote()}>upvote {upvotes}</button>
+                        <button onClick={()=>downvote()}>downvote {downvotes}</button> */}
+                    <Popup
+                      trigger={
+                        <button className="profileInfoName">show Post</button>
+                      }
+                      modal
+                      nested
+                    >
+                      {(close) => (
+                        <>
+                          <p style={{ textAlign: "center", fontSize: "30px" }}>
+                            {" "}
+                            <u> Post</u>
+                          </p>
+                          <form className="modal">
+                            <input
+                              type="text"
+                              required={true}
+                              placeholder="Topic"
+                              value={p.topic}
+                              className="subform"
+                              disabled="true"
+                            />
+                            <textarea
+                              name="Description"
+                              id="Description"
+                              cols="30"
+                              rows="5"
+                              placeholder="Content"
+                              value={p.content}
+                              disabled="true"
+                            ></textarea>
+                          </form>
+                          <div className="profileInfoName">
+                            <button
+                              className="formsubmit"
+                              onClick={() => {
+                                close();
+                              }}
+                            >
+                              Close
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </Popup>
+                    <button onClick={() => deletepost(p.id)}>delete</button>
+                    <button onClick={() => blockuser(p.id)}>block user</button>
+                    {/* <button onClick={()=>ignore(p.id)}>ignore</button> */}
+                  </div>
+                );
+                //   return <Post key={p.id} post={p} username={username} />;
+              })}
             </div>
           ) : (
+            // </div>
             <>
               {subgdata.moderator.email !== localStorage.getItem("hello") ? (
                 <div className="profileInfo">
@@ -512,8 +713,8 @@ const Subdetails = () => {
                           <button
                             className="formsubmit"
                             onClick={() => {
+                              findbannedwords();
                               close();
-                              submitform();
                             }}
                           >
                             Submit

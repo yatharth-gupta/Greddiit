@@ -25,7 +25,14 @@ export default function Mysubgreddiit(props) {
   const [subgdata, setsubgdata] = useState([]);
   const [add, setadd] = useState(false);
   const [done, setdone] = useState(false);
+  const [bannedstring, setbannedstring] = useState("");
+  const [tagsstring, settagsstring] = useState("");
+  // const [bannedwords, setbannedwords] = useState([]);
+  const [des, setdes] = useState("");
+  const [deswords, setdeswords] = useState([]);
   let navigate = useNavigate();
+  let des1 = "";
+  let tagwords = [];
   useEffect(() => {
     const email = localStorage.getItem("hello");
     axios
@@ -123,17 +130,20 @@ export default function Mysubgreddiit(props) {
   const submitform = () => {
     // e.preventDefault();
     // console.log(Description)
-    console.log(name);
-    console.log(document.getElementById("Description").value);
-    const des = document.getElementById("Description").value;
+    // console.log(name);
+    // console.log(document.getElementById("Description").value);
+    // const des = document.getElementById("Description").value;
     const email = props.userdata.email;
     const username = props.userdata.username;
+    console.log(des1);
     axios
       .post("http://localhost:5000/mysubgreddiit", {
         name,
-        des,
+        des1,
         email,
         username,
+        bannedstring,
+        tagwords,
       })
       .then((response) => {
         // setResponse(response.data)
@@ -147,6 +157,35 @@ export default function Mysubgreddiit(props) {
         console.log(error);
       });
     // setadd(!add)
+  };
+  const findbannedwords = async () => {
+    // e.preventDefault();
+    // console.log(Description)
+    tagwords = tagsstring.split(",");
+    const bannedwords = bannedstring.split(",");
+    // const bannedwords = bannedstring.split(",")
+    // setdes(document.getElementById("Description").value);
+    des1 = document.getElementById("Description").value;
+
+    // console.log(des1);
+    console.log(bannedwords);
+    // setdeswords(des.split(" "))
+    // console.log(deswords)
+    // deswords.map((d)=>{
+
+    // })
+    await bannedwords.map((b) => {
+      var searchMask = `${b}`;
+      var regEx = new RegExp(searchMask, "ig");
+      var replaceMask = "*";
+      // setdes(des.replace(regEx, replaceMask));
+      des1 = des1.replace(regEx, replaceMask);
+      console.log(des1);
+      // setdes(des1)
+    });
+    submitform();
+    // console.log(name);
+    // console.log(document.getElementById("Description").value);
   };
   const mapfunction = () => {
     return (
@@ -168,6 +207,7 @@ export default function Mysubgreddiit(props) {
               <span>Posts: {s.no_of_posts}</span>
               <span>Description: {s.description}</span>
               <span>Banned keywords: {s.banned_keywords}</span>
+              <span>Tags: {s.tags.join()}</span>
 
               <span>
                 <button
@@ -248,8 +288,20 @@ export default function Mysubgreddiit(props) {
                       type="text"
                       placeholder="Banned Keywords"
                       className="subform"
+                      value={bannedstring}
+                      onChange={(e) => {
+                        setbannedstring(e.target.value);
+                      }}
                     />
-                    <input type="text" placeholder="Tags" className="subform" />
+                    <input
+                      type="text"
+                      placeholder="Tags"
+                      className="subform"
+                      value={tagsstring}
+                      onChange={(e) => {
+                        settagsstring(e.target.value);
+                      }}
+                    />
                     {/* <input type="text" placeholder="Description" className="subform1" /> */}
                     <textarea
                       name="Description"
@@ -263,7 +315,8 @@ export default function Mysubgreddiit(props) {
                     <button
                       className="formsubmit"
                       onClick={() => {
-                        submitform();
+                        findbannedwords();
+                        // submitform();
                         close();
                       }}
                     >
@@ -274,16 +327,20 @@ export default function Mysubgreddiit(props) {
               )}
             </Popup>
             {/* </div> */}
-            {done ? mapfunction() : <CircularProgress
-      size={70}
-      sx={{
-        position: "fixed",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-        zIndex: 2,
-      }}
-    />}
+            {done ? (
+              mapfunction()
+            ) : (
+              <CircularProgress
+                size={70}
+                sx={{
+                  position: "fixed",
+                  left: "50%",
+                  top: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 2,
+                }}
+              />
+            )}
           </div>
         </div>
       </div>

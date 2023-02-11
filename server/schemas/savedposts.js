@@ -17,7 +17,7 @@ const savedsposts_schema = new Schema(
     topic:{type:String},
     Name: { type: String },
     content: { type: String },
-    banned_keywords: { type: Array },
+    banned_keywords: { type: String },
     tags: { type: Array },
   },
   { timestamps: true }

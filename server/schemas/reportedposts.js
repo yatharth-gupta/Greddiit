@@ -2,7 +2,7 @@ const { type } = require("@testing-library/user-event/dist/type");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const posts_schema = new Schema(
+const reportedposts_schema = new Schema(
   {
     // first_name: { type: String, required: [true, "must be entered"] },
     // second_name: { type: String },
@@ -10,6 +10,7 @@ const posts_schema = new Schema(
     // contact: { type: Number,required:[true] },
     username: { type: String},
     email: { type: String},
+    postid:{type:String},
     // password: { type: String, required: [true, "must be entered"] },
     comments: [{text:{type:String},username:{type:String}}],
     upvotes: { type: Number },
@@ -17,11 +18,14 @@ const posts_schema = new Schema(
     topic:{type:String},
     Name: { type: String },
     content: { type: String },
-    banned_keywords: { type:String },
+    banned_keywords: { type: String },
     tags: { type: Array },
+    concern:{type:String},
+    reportedtext:{type:String},
+    reportedby:{type:String},
   },
   { timestamps: true }
 );
 
-const posts = new mongoose.model("posts", posts_schema);
-module.exports = posts;
+const reportedposts = new mongoose.model("reportedposts", reportedposts_schema);
+module.exports = reportedposts;
